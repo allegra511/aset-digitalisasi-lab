@@ -1,0 +1,50 @@
+extends ../layouts/main
+
+block content
+  section.section-header
+    div
+      p.eyebrow Audit
+      h2 Audit Logs
+      p Telusuri aksi penting berdasarkan action, entity, user, dan tanggal.
+
+  section.content-panel
+    form.filter-bar(action="/audit", method="GET")
+      input(type="search", name="search", value=filters.search, placeholder="Cari action atau entity")
+      input(type="text", name="action", value=filters.action, placeholder="Action")
+      input(type="text", name="entity", value=filters.entity, placeholder="Entity")
+      select(name="userId")
+        option(value="") Semua user
+        each user in users
+          option(value=user.id, selected=String(filters.userId) === String(user.id)) #{user.full_name} - #{user.email}
+      input(type="date", name="dateFrom", value=filters.dateFrom)
+      input(type="date", name="dateTo", value=filters.dateTo)
+      button.button.button-secondary(type="submit") Filter
+
+    if logs && logs.length
+      .table-wrap
+        table.data-table
+          thead
+            tr
+              th Waktu
+              th User
+              th Action
+              th Entity
+              th Entity ID
+              th IP
+              th Aksi
+          tbody
+            each log in logs
+              tr
+                td= formatDateTime(log.created_at)
+                td= log.user_name || 'Sistem'
+                td
+                  span.badge.badge-audit= log.action
+                td= log.entity
+                td= log.entity_id || '-'
+                td= log.ip_address || '-'
+                td.actions
+                  a.button.button-secondary(href=`/audit/${log.id}`) Detail
+    else
+      - var emptyTitle = 'Belum ada audit log'
+      - var emptyMessage = 'Aksi penting yang tercatat akan tampil di sini.'
+      include ../partials/empty-state

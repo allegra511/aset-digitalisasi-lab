@@ -1,0 +1,19 @@
+extends ../layouts/main
+
+block content
+  section.section-header
+    div
+      p.eyebrow Soft Delete Aset
+      h2= asset.name
+      p Nomor inventaris #{asset.inventory_number}
+    a.button.button-secondary(href=`/assets/${asset.id}`) Kembali
+
+  section.content-panel
+    form.form-grid(action=`/assets/${asset.id}/delete`, method="POST", novalidate)
+      .form-group
+        label(for="reason") Alasan Soft Delete
+        textarea#reason(name="reason", rows="4", required)= formData.reason
+        if errors.reason
+          p.field-error= errors.reason
+      .form-actions
+        button.button.button-danger(type="submit") Soft Delete Aset

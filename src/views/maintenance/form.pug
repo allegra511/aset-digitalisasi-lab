@@ -1,0 +1,78 @@
+extends ../layouts/main
+
+block content
+  section.section-header
+    div
+      p.eyebrow Maintenance
+      h2= title
+      p Pilih aset, catat kondisi, lalu tambahkan BHP yang digunakan bila ada.
+    a.button.button-secondary(href="/maintenance") Kembali
+
+  section.content-panel
+    form.form-grid(action="/maintenance", method="POST", novalidate)
+      .form-group
+        label(for="assetId") Aset
+        select#assetId(name="assetId", required)
+          option(value="") Pilih aset
+          each asset in assets
+            option(value=asset.id, selected=String(formData.assetId) === String(asset.id)) #{asset.inventory_number} - #{asset.name} (#{asset.status})
+        if errors.assetId
+          p.field-error= errors.assetId
+
+      .form-group
+        label(for="maintenanceDate") Tanggal Maintenance
+        input#maintenanceDate(type="date", name="maintenanceDate", value=formData.maintenanceDate, required)
+        if errors.maintenanceDate
+          p.field-error= errors.maintenanceDate
+
+      .form-group
+        label(for="description") Deskripsi
+        textarea#description(name="description", rows="4", required)= formData.description
+        if errors.description
+          p.field-error= errors.description
+
+      .form-grid.form-grid-two
+        .form-group
+          label(for="conditionBefore") Kondisi Sebelum
+          select#conditionBefore(name="conditionBefore")
+            each condition in ['good', 'fair', 'damaged']
+              option(value=condition, selected=formData.conditionBefore === condition)= condition
+          if errors.conditionBefore
+            p.field-error= errors.conditionBefore
+        .form-group
+          label(for="conditionAfter") Kondisi Setelah
+          select#conditionAfter(name="conditionAfter", required)
+            each condition in ['good', 'fair', 'damaged']
+              option(value=condition, selected=formData.conditionAfter === condition)= condition
+          if errors.conditionAfter
+            p.field-error= errors.conditionAfter
+
+      .form-grid.form-grid-two
+        .form-group
+          label(for="statusAfter") Status Aset Setelah Maintenance
+          select#statusAfter(name="statusAfter", required)
+            each status in ['active', 'maintenance', 'damaged']
+              option(value=status, selected=formData.statusAfter === status)= status
+          if errors.statusAfter
+            p.field-error= errors.statusAfter
+        .form-group
+          label(for="cost") Biaya
+          input#cost(type="number", name="cost", value=formData.cost, min="0", step="0.01")
+          if errors.cost
+            p.field-error= errors.cost
+
+      .form-group
+        label BHP Digunakan
+        .maintenance-consumables
+          - const usageRows = formData.consumables && formData.consumables.length ? formData.consumables : [{}, {}, {}]
+          each usage, index in usageRows
+            .maintenance-consumable-row
+              select(name="consumableIds")
+                option(value="") Tanpa BHP
+                each consumable in consumables
+                  option(value=consumable.id, selected=String(usage.consumableId || '') === String(consumable.id)) #{consumable.name} - stok #{consumable.current_stock} #{consumable.unit}
+              input(type="number", name="consumableQuantities", value=usage.quantityUsed || '', min="0", step="1", placeholder="Quantity")
+        p.help-text Kosongkan baris bila tidak memakai BHP.
+
+      .form-actions
+        button.button(type="submit") Simpan Maintenance

@@ -1,0 +1,63 @@
+extends ../layouts/main
+
+block content
+  section.section-header
+    div
+      p.eyebrow Administrator
+      h2= title
+      p Isi data akun dan role pengguna.
+    a.button.button-secondary(href="/users") Kembali
+
+  section.content-panel
+    form.form-grid(action=mode === 'create' ? '/users' : `/users/${user.id}`, method="POST", novalidate)
+      .form-group
+        label(for="fullName") Nama Lengkap
+        input#fullName(type="text", name="fullName", value=formData.fullName, required)
+        if errors.fullName
+          p.field-error= errors.fullName
+      .form-group
+        label(for="email") Email
+        input#email(type="email", name="email", value=formData.email, required)
+        if errors.email
+          p.field-error= errors.email
+      .form-group
+        label(for="username") Username
+        input#username(type="text", name="username", value=formData.username, required)
+        if errors.username
+          p.field-error= errors.username
+      .form-group
+        label(for="phone") No. Telepon
+        input#phone(type="text", name="phone", value=formData.phone)
+        if errors.phone
+          p.field-error= errors.phone
+      .form-group
+        label(for="roleId") Role
+        select#roleId(name="roleId", required)
+          option(value="") Pilih role
+          each role in roles
+            option(value=role.id, selected=String(formData.roleId) === String(role.id))= role.label
+        if errors.roleId
+          p.field-error= errors.roleId
+      if mode === 'create'
+        .form-group
+          label(for="password") Password
+          input#password(type="password", name="password", required)
+          if errors.password
+            p.field-error= errors.password
+      .form-check
+        input#isActive(type="checkbox", name="isActive", checked=formData.isActive)
+        label(for="isActive") Akun aktif
+      .form-actions
+        button.button(type="submit") Simpan
+
+  if mode === 'edit'
+    section.content-panel
+      h2 Reset Password
+      form.form-grid(action=`/users/${user.id}/reset-password`, method="POST", novalidate)
+        .form-group
+          label(for="resetPassword") Password Baru
+          input#resetPassword(type="password", name="password", required)
+          if errors.password
+            p.field-error= errors.password
+        .form-actions
+          button.button.button-secondary(type="submit") Reset Password

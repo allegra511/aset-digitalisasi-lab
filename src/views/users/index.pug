@@ -1,0 +1,50 @@
+extends ../layouts/main
+
+block content
+  section.section-header
+    div
+      p.eyebrow Administrator
+      h2 Manajemen Pengguna
+      p Kelola akun, role, dan status akses pengguna sistem.
+    a.button(href="/users/new") Tambah Pengguna
+
+  section.content-panel
+    form.filter-bar(action="/users", method="GET")
+      input(type="search", name="search", value=search, placeholder="Cari nama, email, atau role")
+      button.button.button-secondary(type="submit") Cari
+
+    if users && users.length
+      .table-wrap
+        table.data-table
+          thead
+            tr
+              th Nama
+              th Email
+              th Username
+              th Role
+              th Status
+              th Aksi
+          tbody
+            each user in users
+              tr
+                td= user.full_name
+                td= user.email
+                td= user.username
+                td= user.role_label
+                td
+                  if user.is_active
+                    span.badge.badge-active Aktif
+                  else
+                    span.badge.badge-inactive Nonaktif
+                td.actions
+                  a.button.button-secondary(href=`/users/${user.id}/edit`) Edit
+                  if user.is_active
+                    form(action=`/users/${user.id}/deactivate`, method="POST")
+                      button.button.button-danger(type="submit") Nonaktifkan
+                  else
+                    form(action=`/users/${user.id}/activate`, method="POST")
+                      button.button(type="submit") Aktifkan
+    else
+      - var emptyTitle = 'Belum ada pengguna'
+      - var emptyMessage = search ? 'Tidak ada pengguna yang cocok dengan pencarian.' : 'Tambahkan pengguna pertama untuk mulai mengelola akses.'
+      include ../partials/empty-state

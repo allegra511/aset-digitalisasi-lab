@@ -1,0 +1,67 @@
+extends ../layouts/main
+
+block content
+  section.section-header
+    div
+      p.eyebrow Draf Pengadaan
+      h2= draft.title
+      p Tahun #{draft.year} oleh #{draft.creator_name}
+    .actions
+      a.button.button-secondary(href="/procurement/drafts") Kembali
+      if isEditable
+        a.button.button-secondary(href=`/procurement/drafts/${draft.id}/edit`) Edit Draf
+        a.button(href=`/procurement/drafts/${draft.id}/items/new`) Tambah Item
+        form(action=`/procurement/drafts/${draft.id}/submit`, method="POST")
+          button.button(type="submit") Submit
+
+  section.summary-grid
+    article.summary-card
+      span.summary-label Status
+      strong
+        span.badge(class=`badge-${draft.status}`)= draft.status
+      p= draft.is_locked ? 'Draf terkunci' : 'Draf belum terkunci'
+    article.summary-card
+      span.summary-label Submitted
+      strong= formatDateTime(draft.submitted_at)
+      p Waktu submit draf
+    article.summary-card
+      span.summary-label Finalized
+      strong= formatDateTime(draft.finalized_at)
+      p Waktu finalisasi draf
+
+  section.content-panel
+    .panel-header
+      h2 Item Pengadaan
+    if items && items.length
+      .table-wrap
+        table.data-table
+          thead
+            tr
+              th Nama
+              th Jenis
+              th Jumlah
+              th Estimasi
+              th Ruangan
+              th Review
+              th Aksi
+          tbody
+            each item in items
+              tr
+                td= item.name
+                td= item.item_type
+                td= item.quantity_requested
+                td= item.estimated_unit_price
+                td= item.room_name || '-'
+                td
+                  span.badge(class=`badge-${item.review_status}`)= item.review_status
+                td.actions
+                  if isEditable
+                    a.button.button-secondary(href=`/procurement/drafts/${draft.id}/items/${item.id}/edit`) Edit
+                    form(action=`/procurement/drafts/${draft.id}/items/${item.id}/delete`, method="POST")
+                      button.button.button-danger(type="submit") Hapus
+                  else
+                    span= '-'
+    else
+      - var emptyTitle = 'Belum ada item'
+      - var emptyMessage = isEditable ? 'Tambahkan item pengadaan sebelum submit.' : 'Draf ini belum memiliki item.'
+      include ../partials/empty-state

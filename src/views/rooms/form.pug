@@ -1,0 +1,37 @@
+extends ../layouts/main
+
+block content
+  section.section-header
+    div
+      p.eyebrow Administrator
+      h2= title
+      p Isi detail ruangan laboratorium.
+    a.button.button-secondary(href="/rooms") Kembali
+
+  section.content-panel
+    form.form-grid(action=mode === 'create' ? '/rooms' : `/rooms/${room.id}`, method="POST", novalidate)
+      .form-group
+        label(for="code") Kode Ruangan
+        input#code(type="text", name="code", value=formData.code, required)
+        if errors.code
+          p.field-error= errors.code
+      .form-group
+        label(for="name") Nama Ruangan
+        input#name(type="text", name="name", value=formData.name, required)
+        if errors.name
+          p.field-error= errors.name
+      .form-group
+        label(for="location") Lokasi
+        input#location(type="text", name="location", value=formData.location)
+        if errors.location
+          p.field-error= errors.location
+      .form-group
+        label(for="description") Deskripsi
+        textarea#description(name="description", rows="4")= formData.description
+        if errors.description
+          p.field-error= errors.description
+      .form-check
+        input#isActive(type="checkbox", name="isActive", checked=formData.isActive)
+        label(for="isActive") Ruangan aktif
+      .form-actions
+        button.button(type="submit") Simpan

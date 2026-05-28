@@ -1,0 +1,8 @@
+extends ../layouts/main
+
+block content
+  section.error-panel
+    p.eyebrow 404
+    h2 Halaman Tidak Ditemukan
+    p Halaman yang kamu buka tidak tersedia atau sudah dipindahkan.
+    a.button(href=currentUser ? '/dashboard' : '/auth/login') Kembali

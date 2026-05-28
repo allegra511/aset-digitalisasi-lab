@@ -1,0 +1,15 @@
+extends ../layouts/auth
+
+block content
+  form.auth-form(action="/auth/login", method="POST", novalidate)
+    .form-group
+      label(for="identifier") Email atau Username
+      input#identifier(type="text", name="identifier", value=formData && formData.identifier ? formData.identifier : '', autocomplete="username", required, autofocus)
+      if errors && errors.identifier
+        p.field-error= errors.identifier
+    .form-group
+      label(for="password") Password
+      input#password(type="password", name="password", autocomplete="current-password", required)
+      if errors && errors.password
+        p.field-error= errors.password
+    button.button(type="submit") Login

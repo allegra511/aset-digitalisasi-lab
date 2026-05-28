@@ -1,0 +1,47 @@
+extends ../layouts/main
+
+block content
+  section.section-header
+    div
+      p.eyebrow Staf Administrasi
+      h2 Penerimaan Barang
+      p Catat barang approved dari draf finalized, termasuk penerimaan parsial.
+
+  section.content-panel
+    form.filter-bar(action="/receiving", method="GET")
+      input(type="search", name="search", value=search, placeholder="Cari item atau draf")
+      button.button.button-secondary(type="submit") Cari
+
+    if items && items.length
+      .table-wrap
+        table.data-table
+          thead
+            tr
+              th Item
+              th Jenis
+              th Approved
+              th Diterima
+              th Sisa
+              th Status
+              th Aksi
+          tbody
+            each item in items
+              tr
+                td
+                  strong= item.name
+                  p= item.draft_title
+                td= item.item_type
+                td= item.quantity_approved
+                td= item.received_quantity
+                td= item.remaining_quantity
+                td
+                  span.badge(class=`badge-${item.receiving_status}`)= item.receiving_status
+                td.actions
+                  if item.remaining_quantity > 0
+                    a.button.button-secondary(href=`/receiving/items/${item.id}/receive`) Terima
+                  else
+                    span= '-'
+    else
+      - var emptyTitle = 'Tidak ada item siap diterima'
+      - var emptyMessage = search ? 'Tidak ada item yang cocok dengan pencarian.' : 'Item approved dari draf finalized akan tampil di sini.'
+      include ../partials/empty-state

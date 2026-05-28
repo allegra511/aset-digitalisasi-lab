@@ -1,0 +1,41 @@
+extends ../layouts/main
+
+block content
+  section.section-header
+    div
+      p.eyebrow Dashboard
+      h2= dashboard.title
+      p= dashboard.description
+
+  if dashboard.metrics && dashboard.metrics.length
+    section.summary-grid
+      each item in dashboard.metrics
+        article.summary-card(class=`card-${item.tone || 'neutral'}`)
+          span.summary-label= item.label
+          strong= item.value
+          p= item.note
+
+  if dashboard.sections && dashboard.sections.length
+    each section in dashboard.sections
+      section.content-panel
+        .panel-header
+          h2= section.title
+        if section.items && section.items.length
+          .activity-list
+            each item in section.items
+              article.activity-item
+                div
+                  strong= item.title
+                  p= item.subtitle
+                div.activity-meta
+                  span.badge(class=`badge-${item.status}`)= item.status
+                  span= formatDateTime(item.date)
+        else
+          - var emptyTitle = section.emptyTitle
+          - var emptyMessage = section.emptyMessage
+          include ../partials/empty-state
+  else
+    section.content-panel
+      - var emptyTitle = 'Belum ada data dashboard'
+      - var emptyMessage = 'Ringkasan akan tampil setelah data tersedia.'
+      include ../partials/empty-state

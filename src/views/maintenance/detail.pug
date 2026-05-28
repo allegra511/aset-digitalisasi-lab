@@ -1,0 +1,51 @@
+extends ../layouts/main
+
+block content
+  section.section-header
+    div
+      p.eyebrow Detail Maintenance
+      h2= log.asset_name
+      p #{log.inventory_number} - #{formatDate(log.maintenance_date)}
+    .actions
+      a.button.button-secondary(href="/maintenance") Kembali
+      a.button.button-secondary(href=`/assets/${log.asset_id}`) Detail Aset
+
+  section.summary-grid
+    article.summary-card
+      span.summary-label Kondisi
+      strong #{log.condition_before || '-'} -> #{log.condition_after || '-'}
+      p Perubahan kondisi aset
+    article.summary-card
+      span.summary-label Status Setelah
+      strong
+        span.badge(class=`badge-${log.status_after}`)= log.status_after
+      p Status aset setelah maintenance
+    article.summary-card
+      span.summary-label Biaya
+      strong= log.cost || 0
+      p Dicatat oleh #{log.performed_by_name || '-'}
+
+  section.content-panel
+    h2 Deskripsi
+    p= log.description
+
+  section.content-panel
+    h2 Pemakaian BHP
+    if consumables && consumables.length
+      .table-wrap
+        table.data-table
+          thead
+            tr
+              th Nama
+              th Quantity
+              th Satuan
+          tbody
+            each item in consumables
+              tr
+                td= item.name
+                td= item.quantity_used
+                td= item.unit
+    else
+      - var emptyTitle = 'Tidak memakai BHP'
+      - var emptyMessage = 'Maintenance ini tidak mengurangi stok BHP.'
+      include ../partials/empty-state

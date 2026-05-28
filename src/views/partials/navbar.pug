@@ -1,0 +1,16 @@
+header.topbar
+  .topbar-title
+    p.eyebrow Ruang kerja
+    h1= title || 'Dashboard'
+  if currentUser
+    .topbar-user
+      div
+        span Selamat datang, #{currentUser.fullName}
+        small= currentUser.roleLabel
+      form(action="/auth/logout", method="POST")
+        button.button.button-ghost(type="submit") Logout
+  else
+    .topbar-user
+      div
+        span= appName
+        small Sistem aset laboratorium

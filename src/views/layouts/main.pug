@@ -1,0 +1,16 @@
+doctype html
+html(lang="id")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title #{title ? title + ' - ' : ''}#{appName}
+    link(rel="stylesheet", href="/css/app.css")
+  body
+    .layout-shell
+      include ../partials/sidebar
+      .layout-main
+        include ../partials/navbar
+        main.page-content
+          .content-frame
+            include ../partials/flash
+            block content

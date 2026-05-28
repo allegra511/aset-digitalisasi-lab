@@ -1,0 +1,35 @@
+extends ../layouts/main
+
+block content
+  section.section-header
+    div
+      p.eyebrow Detail Audit
+      h2= log.action
+      p #{log.entity} #{log.entity_id || ''}
+    a.button.button-secondary(href="/audit") Kembali
+
+  section.summary-grid
+    article.summary-card
+      span.summary-label User
+      strong= log.user_name || 'Sistem'
+      p= log.user_email || '-'
+    article.summary-card
+      span.summary-label Waktu
+      strong= formatDateTime(log.created_at)
+      p IP #{log.ip_address || '-'}
+    article.summary-card
+      span.summary-label Entity
+      strong= log.entity
+      p ID #{log.entity_id || '-'}
+
+  section.content-panel
+    h2 Before Data
+    pre.json-block= beforeData
+
+  section.content-panel
+    h2 After Data
+    pre.json-block= afterData
+
+  section.content-panel
+    h2 User Agent
+    p= log.user_agent || '-'

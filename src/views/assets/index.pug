@@ -1,0 +1,53 @@
+extends ../layouts/main
+
+block content
+  section.section-header
+    div
+      p.eyebrow Inventaris
+      h2 Daftar Aset
+      p Telusuri aset berdasarkan nomor inventaris, ruangan, status, dan kondisi.
+
+  section.content-panel
+    form.filter-bar(action="/assets", method="GET")
+      input(type="search", name="search", value=filters.search, placeholder="Cari nomor inventaris atau nama")
+      select(name="roomId")
+        option(value="") Semua ruangan
+        each room in rooms
+          option(value=room.id, selected=String(filters.roomId) === String(room.id)) #{room.code} - #{room.name}
+      select(name="status")
+        option(value="") Semua status
+        each status in ['active', 'maintenance', 'damaged', 'replaced', 'deleted']
+          option(value=status, selected=filters.status === status)= status
+      select(name="condition")
+        option(value="") Semua kondisi
+        each condition in ['good', 'fair', 'damaged']
+          option(value=condition, selected=filters.condition === condition)= condition
+      button.button.button-secondary(type="submit") Filter
+
+    if assets && assets.length
+      .table-wrap
+        table.data-table
+          thead
+            tr
+              th Nomor Inventaris
+              th Nama
+              th Ruangan
+              th Status
+              th Kondisi
+              th Aksi
+          tbody
+            each asset in assets
+              tr
+                td= asset.inventory_number
+                td= asset.name
+                td= asset.room_name || '-'
+                td
+                  span.badge(class=`badge-${asset.status}`)= asset.status
+                td
+                  span.badge(class=`badge-${asset.asset_condition}`)= asset.asset_condition
+                td.actions
+                  a.button.button-secondary(href=`/assets/${asset.id}`) Detail
+    else
+      - var emptyTitle = 'Belum ada aset'
+      - var emptyMessage = 'Aset akan muncul setelah dibuat dari data penerimaan.'
+      include ../partials/empty-state

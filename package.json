@@ -1,0 +1,44 @@
+{
+  "name": "aset-digitalisasi-lab",
+  "version": "0.1.0",
+  "description": "Labora, sistem pengelolaan aset laboratorium dan barang habis pakai berbasis Node.js, Express, Pug, dan MySQL.",
+  "main": "app.js",
+  "scripts": {
+    "dev": "nodemon app.js",
+    "start": "node app.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "db:schema": "node database/scripts/apply-schema.js",
+    "db:seed": "node database/seeders/seed-admin.js"
+  },
+  "keywords": [
+    "asset-management",
+    "laboratory",
+    "express",
+    "pug",
+    "mysql"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.4.2",
+    "exceljs": "^4.4.0",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "express-validator": "^7.3.2",
+    "method-override": "^3.0.0",
+    "multer": "^2.1.1",
+    "mysql2": "^3.22.3",
+    "pug": "^3.0.4",
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "jest": "^30.4.2",
+    "nodemon": "^3.1.14",
+    "supertest": "^7.2.2"
+  }
+}

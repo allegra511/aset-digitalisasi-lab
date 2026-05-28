@@ -1,0 +1,48 @@
+extends ../layouts/main
+
+block content
+  section.section-header
+    div
+      p.eyebrow Administrator
+      h2 Manajemen Ruangan
+      p Kelola kode, lokasi, dan status ruangan laboratorium.
+    a.button(href="/rooms/new") Tambah Ruangan
+
+  section.content-panel
+    form.filter-bar(action="/rooms", method="GET")
+      input(type="search", name="search", value=search, placeholder="Cari kode, nama, atau lokasi")
+      button.button.button-secondary(type="submit") Cari
+
+    if rooms && rooms.length
+      .table-wrap
+        table.data-table
+          thead
+            tr
+              th Kode
+              th Nama
+              th Lokasi
+              th Status
+              th Aksi
+          tbody
+            each room in rooms
+              tr
+                td= room.code
+                td= room.name
+                td= room.location || '-'
+                td
+                  if room.is_active
+                    span.badge.badge-active Aktif
+                  else
+                    span.badge.badge-inactive Nonaktif
+                td.actions
+                  a.button.button-secondary(href=`/rooms/${room.id}/edit`) Edit
+                  if room.is_active
+                    form(action=`/rooms/${room.id}/deactivate`, method="POST")
+                      button.button.button-danger(type="submit") Nonaktifkan
+                  else
+                    form(action=`/rooms/${room.id}/activate`, method="POST")
+                      button.button(type="submit") Aktifkan
+    else
+      - var emptyTitle = 'Belum ada ruangan'
+      - var emptyMessage = search ? 'Tidak ada ruangan yang cocok dengan pencarian.' : 'Tambahkan ruangan laboratorium pertama.'
+      include ../partials/empty-state

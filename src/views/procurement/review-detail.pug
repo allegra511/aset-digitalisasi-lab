@@ -1,0 +1,57 @@
+extends ../layouts/main
+
+block content
+  section.section-header
+    div
+      p.eyebrow Review Pengadaan
+      h2= draft.title
+      p Tahun #{draft.year} oleh #{draft.creator_name}
+    .actions
+      a.button.button-secondary(href="/procurement/review") Kembali
+      form(action=`/procurement/review/${draft.id}/finalize`, method="POST")
+        button.button(type="submit") Finalisasi
+
+  section.content-panel
+    .panel-header
+      h2 Item untuk Review
+    if items && items.length
+      .table-wrap
+        table.data-table
+          thead
+            tr
+              th Nama
+              th Jenis
+              th Jumlah
+              th Estimasi
+              th Ruangan
+              th Status
+              th Keputusan
+          tbody
+            each item in items
+              tr
+                td
+                  strong= item.name
+                  if item.specification
+                    p= item.specification
+                td= item.item_type
+                td= item.quantity_requested
+                td= item.estimated_unit_price
+                td= item.room_name || '-'
+                td
+                  span.badge(class=`badge-${item.review_status}`)= item.review_status
+                  if item.review_note
+                    p= item.review_note
+                td
+                  if item.review_status === 'pending_review'
+                    .actions
+                      form(action=`/procurement/review/${draft.id}/items/${item.id}/approve`, method="POST")
+                        button.button(type="submit") Approve
+                    form.inline-review-form(action=`/procurement/review/${draft.id}/items/${item.id}/reject`, method="POST")
+                      textarea(name="reviewNote", rows="2", placeholder="Catatan penolakan")
+                      button.button.button-danger(type="submit") Reject
+                  else
+                    span= '-'
+    else
+      - var emptyTitle = 'Belum ada item'
+      - var emptyMessage = 'Draf submitted tanpa item tidak dapat difinalisasi.'
+      include ../partials/empty-state

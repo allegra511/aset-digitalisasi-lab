@@ -1,0 +1,48 @@
+extends ../layouts/main
+
+block content
+  section.section-header
+    div
+      p.eyebrow BHP
+      h2= title
+      p Isi master data barang habis pakai.
+    a.button.button-secondary(href=mode === 'edit' ? `/consumables/${consumable.id}` : '/consumables') Kembali
+
+  section.content-panel
+    form.form-grid(action=mode === 'create' ? '/consumables' : `/consumables/${consumable.id}`, method="POST", novalidate)
+      .form-group
+        label(for="name") Nama BHP
+        input#name(type="text", name="name", value=formData.name, required)
+        if errors.name
+          p.field-error= errors.name
+      .form-group
+        label(for="specification") Spesifikasi
+        textarea#specification(name="specification", rows="3")= formData.specification
+        if errors.specification
+          p.field-error= errors.specification
+      .form-group
+        label(for="unit") Satuan
+        input#unit(type="text", name="unit", value=formData.unit, required)
+        if errors.unit
+          p.field-error= errors.unit
+      if mode === 'create'
+        .form-group
+          label(for="currentStock") Stok Awal
+          input#currentStock(type="number", name="currentStock", value=formData.currentStock, min="0")
+          if errors.currentStock
+            p.field-error= errors.currentStock
+      .form-group
+        label(for="minimumStock") Stok Minimum
+        input#minimumStock(type="number", name="minimumStock", value=formData.minimumStock, min="0", required)
+        if errors.minimumStock
+          p.field-error= errors.minimumStock
+      .form-group
+        label(for="roomId") Ruangan
+        select#roomId(name="roomId")
+          option(value="") Tidak ditentukan
+          each room in rooms
+            option(value=room.id, selected=String(formData.roomId) === String(room.id)) #{room.code} - #{room.name}
+        if errors.roomId
+          p.field-error= errors.roomId
+      .form-actions
+        button.button(type="submit") Simpan

@@ -1,0 +1,27 @@
+aside.sidebar
+  a.sidebar-brand(href="/dashboard", aria-label=appName)
+    span.sidebar-brand-mark L
+    span.sidebar-brand-text
+      strong= appName
+      if currentUser
+        small= currentUser.roleLabel
+  nav.sidebar-nav(aria-label="Navigasi utama")
+    a(class=currentPath === '/dashboard' ? 'active' : '', href="/dashboard") Dashboard
+    if currentUser
+      a(class=currentPath.startsWith('/reports') ? 'active' : '', href="/reports") Laporan
+      if currentUser.roleName === constants.ROLES.ADMINISTRATOR
+        a(class=currentPath.startsWith('/users') ? 'active' : '', href="/users") Pengguna
+        a(class=currentPath.startsWith('/rooms') ? 'active' : '', href="/rooms") Ruangan
+        a(class=currentPath.startsWith('/audit') ? 'active' : '', href="/audit") Audit
+      if currentUser.roleName === constants.ROLES.KEPALA_LABORATORIUM
+        a(class=currentPath.startsWith('/procurement/drafts') ? 'active' : '', href="/procurement/drafts") Pengadaan
+      if currentUser.roleName === constants.ROLES.KETUA_PROGRAM_STUDI
+        a(class=currentPath.startsWith('/procurement/review') ? 'active' : '', href="/procurement/review") Review
+      if currentUser.roleName === constants.ROLES.STAF_ADMINISTRASI
+        a(class=currentPath.startsWith('/receiving') ? 'active' : '', href="/receiving") Penerimaan
+        a(class=currentPath.startsWith('/consumables') ? 'active' : '', href="/consumables") BHP
+        a(class=currentPath.startsWith('/assets') ? 'active' : '', href="/assets") Inventaris
+      if currentUser.roleName === constants.ROLES.STAF_LABORATORIUM
+        a(class=currentPath.startsWith('/assets') ? 'active' : '', href="/assets") Inventaris
+        a(class=currentPath.startsWith('/consumables') ? 'active' : '', href="/consumables") BHP
+        a(class=currentPath.startsWith('/maintenance') ? 'active' : '', href="/maintenance") Maintenance

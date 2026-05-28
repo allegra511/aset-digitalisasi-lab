@@ -1,0 +1,16 @@
+extends ../layouts/main
+
+block content
+  section.section-header
+    div
+      p.eyebrow Laporan
+      h2 Pusat Laporan
+      p Pilih laporan operasional untuk inventaris, BHP, maintenance, pengadaan, atau penerimaan.
+
+  section.report-grid
+    each report in reports
+      article.report-card
+        div
+          h2= report.title
+          p= report.description
+        a.button.button-secondary(href=`/reports/${report.type}`) Buka Laporan

@@ -1,0 +1,108 @@
+extends ../layouts/main
+
+block content
+  section.section-header
+    div
+      p.eyebrow Detail Aset
+      h2= asset.name
+      p Nomor inventaris #{asset.inventory_number}
+    .actions
+      a.button.button-secondary(href="/assets") Kembali
+      if currentUser && currentUser.roleName === constants.ROLES.STAF_LABORATORIUM
+        a.button(href=`/maintenance/assets/${asset.id}/new`) Tambah Maintenance
+        if !['deleted', 'replaced'].includes(asset.status)
+          a.button.button-secondary(href=`/assets/${asset.id}/replacements/new`) Replacement
+          a.button.button-danger(href=`/assets/${asset.id}/delete`) Soft Delete
+
+  section.summary-grid
+    article.summary-card
+      span.summary-label Status
+      strong
+        span.badge(class=`badge-${asset.status}`)= asset.status
+      p Kondisi: #{asset.asset_condition}
+    article.summary-card
+      span.summary-label Ruangan
+      strong= asset.room_name || '-'
+      p Lokasi aset saat ini
+    article.summary-card
+      span.summary-label Perolehan
+      strong= formatDate(asset.acquisition_date)
+      p Tanggal perolehan
+
+  section.content-panel
+    h2 Identitas Digital
+    if asset.qr_code_path
+      .qr-preview
+        img(src=asset.qr_code_path, alt=`QR ${asset.inventory_number}`)
+        p= asset.qr_code_path
+    else
+      p Belum ada QR code.
+
+  section.content-panel
+    h2 Relasi Replacement
+    if replacements && (replacements.replacedBy.length || replacements.replaces.length)
+      if replacements.replacedBy.length
+        h3 Digantikan Oleh
+        .table-wrap
+          table.data-table
+            thead
+              tr
+                th Nomor Inventaris
+                th Nama
+                th Tanggal
+                th Alasan
+            tbody
+              each item in replacements.replacedBy
+                tr
+                  td
+                    a(href=`/assets/${item.new_asset_id}`)= item.inventory_number
+                  td= item.name
+                  td= formatDate(item.replacement_date)
+                  td= item.reason || '-'
+      if replacements.replaces.length
+        h3 Menggantikan
+        .table-wrap
+          table.data-table
+            thead
+              tr
+                th Nomor Inventaris
+                th Nama
+                th Tanggal
+                th Alasan
+            tbody
+              each item in replacements.replaces
+                tr
+                  td
+                    a(href=`/assets/${item.old_asset_id}`)= item.inventory_number
+                  td= item.name
+                  td= formatDate(item.replacement_date)
+                  td= item.reason || '-'
+    else
+      - var emptyTitle = 'Belum ada relasi replacement'
+      - var emptyMessage = 'Relasi aset lama dan aset pengganti akan tampil di sini.'
+      include ../partials/empty-state
+
+  section.content-panel
+    h2 Riwayat Status
+    if histories && histories.length
+      .table-wrap
+        table.data-table
+          thead
+            tr
+              th Tanggal
+              th Status
+              th Kondisi
+              th Oleh
+              th Catatan
+          tbody
+            each history in histories
+              tr
+                td= formatDateTime(history.changed_at)
+                td #{history.previous_status || '-'} -> #{history.new_status}
+                td #{history.previous_condition || '-'} -> #{history.new_condition || '-'}
+                td= history.changed_by_name || 'Sistem'
+                td= history.note || '-'
+    else
+      - var emptyTitle = 'Belum ada riwayat status'
+      - var emptyMessage = 'Perubahan status aset akan tampil di sini.'
+      include ../partials/empty-state

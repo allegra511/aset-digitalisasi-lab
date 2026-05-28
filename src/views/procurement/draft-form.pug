@@ -1,0 +1,29 @@
+extends ../layouts/main
+
+block content
+  section.section-header
+    div
+      p.eyebrow Kepala Laboratorium
+      h2= title
+      p Isi informasi umum draf pengadaan tahunan.
+    a.button.button-secondary(href=mode === 'edit' ? `/procurement/drafts/${draft.id}` : '/procurement/drafts') Kembali
+
+  section.content-panel
+    form.form-grid(action=mode === 'create' ? '/procurement/drafts' : `/procurement/drafts/${draft.id}`, method="POST", novalidate)
+      .form-group
+        label(for="year") Tahun
+        input#year(type="number", name="year", value=formData.year, min="2000", max="2100", required)
+        if errors.year
+          p.field-error= errors.year
+      .form-group
+        label(for="title") Judul
+        input#title(type="text", name="title", value=formData.title, required)
+        if errors.title
+          p.field-error= errors.title
+      .form-group
+        label(for="notes") Catatan
+        textarea#notes(name="notes", rows="4")= formData.notes
+        if errors.notes
+          p.field-error= errors.notes
+      .form-actions
+        button.button(type="submit") Simpan

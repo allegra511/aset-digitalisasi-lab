@@ -1,0 +1,67 @@
+extends ../layouts/main
+
+block content
+  section.section-header
+    div
+      p.eyebrow Item Pengadaan
+      h2= title
+      p Draf: #{draft.title}
+    a.button.button-secondary(href=`/procurement/drafts/${draft.id}`) Kembali
+
+  section.content-panel
+    form.form-grid(action=mode === 'create' ? `/procurement/drafts/${draft.id}/items` : `/procurement/drafts/${draft.id}/items/${item.id}`, method="POST", novalidate)
+      .form-group
+        label(for="itemType") Jenis Item
+        select#itemType(name="itemType", required)
+          option(value="asset", selected=formData.itemType === 'asset') Inventaris / Aset
+          option(value="consumable", selected=formData.itemType === 'consumable') BHP
+        if errors.itemType
+          p.field-error= errors.itemType
+      .form-group
+        label(for="name") Nama Item
+        input#name(type="text", name="name", value=formData.name, required)
+        if errors.name
+          p.field-error= errors.name
+      .form-group
+        label(for="specification") Spesifikasi
+        textarea#specification(name="specification", rows="3")= formData.specification
+        if errors.specification
+          p.field-error= errors.specification
+      .form-group
+        label(for="quantityRequested") Jumlah
+        input#quantityRequested(type="number", name="quantityRequested", value=formData.quantityRequested, min="1", required)
+        if errors.quantityRequested
+          p.field-error= errors.quantityRequested
+      .form-group
+        label(for="estimatedUnitPrice") Estimasi Harga Satuan
+        input#estimatedUnitPrice(type="number", name="estimatedUnitPrice", value=formData.estimatedUnitPrice, min="0", step="0.01", required)
+        if errors.estimatedUnitPrice
+          p.field-error= errors.estimatedUnitPrice
+      .form-group
+        label(for="roomId") Ruangan
+        select#roomId(name="roomId")
+          option(value="") Tidak ditentukan
+          each room in rooms
+            option(value=room.id, selected=String(formData.roomId) === String(room.id)) #{room.code} - #{room.name}
+        if errors.roomId
+          p.field-error= errors.roomId
+      .form-group
+        label(for="replacementCandidateAssetId") Calon Aset Lama yang Diganti
+        select#replacementCandidateAssetId(name="replacementCandidateAssetId")
+          option(value="") Tidak ada
+          each asset in replacementCandidates
+            option(value=asset.id, selected=String(formData.replacementCandidateAssetId) === String(asset.id)) #{asset.inventory_number} - #{asset.name}
+        if errors.replacementCandidateAssetId
+          p.field-error= errors.replacementCandidateAssetId
+      .form-group
+        label(for="referenceLink") Link Referensi
+        input#referenceLink(type="url", name="referenceLink", value=formData.referenceLink)
+        if errors.referenceLink
+          p.field-error= errors.referenceLink
+      .form-group
+        label(for="notes") Catatan
+        textarea#notes(name="notes", rows="3")= formData.notes
+        if errors.notes
+          p.field-error= errors.notes
+      .form-actions
+        button.button(type="submit") Simpan Item

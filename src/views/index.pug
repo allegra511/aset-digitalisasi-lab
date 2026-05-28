@@ -1,0 +1,94 @@
+doctype html
+html(lang="id")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    meta(name="description", content="Sistem pengelolaan aset laboratorium dan BHP yang rapi, mudah dilacak, dan siap dilaporkan.")
+    title #{appName} - Kelola Aset Lab Lebih Rapi
+    link(rel="stylesheet", href="/css/app.css")
+  body
+    .home-shell
+      header.home-header
+        a.home-brand(href="/", aria-label=appName)
+          span.home-brand-mark L
+          span= appName
+        nav.home-nav(aria-label="Navigasi homepage")
+          a(href="#manfaat") Manfaat
+          a(href="#alur") Alur
+          a(href="#mulai") Mulai
+        .home-header-actions
+          if currentUser
+            a.button.button-secondary(href="/dashboard") Dashboard
+          else
+            a.button.button-secondary(href="/auth/login") Masuk
+
+      main
+        section.home-hero
+          .home-hero-copy
+            p.home-kicker Sistem aset lab modern
+            h1 Kelola aset lab tanpa data yang tercecer.
+            p.home-lead Satu ruang kerja yang bersih untuk mencatat aset, stok BHP, perawatan, dan laporan tanpa alur yang membingungkan.
+            .home-hero-actions
+              if currentUser
+                a.button(href="/dashboard") Buka Dashboard
+              else
+                a.button(href="/auth/login") Masuk Sistem
+              a.button.button-secondary(href="#manfaat") Lihat Manfaat
+          .home-hero-media
+            img(src="/images/homepage-hero.png", alt="Ilustrasi dashboard pengelolaan aset laboratorium yang modern dan rapi")
+
+        section#manfaat.home-section
+          .home-section-heading
+            p.home-kicker Manfaat utama
+            h2 Dibuat agar pekerjaan lab terasa lebih ringan.
+          .home-benefit-grid
+            article.home-benefit-card
+              span.home-benefit-mark Tertata
+              h3 Semua data punya tempat
+              p Aset, BHP, dan riwayat kerja tersimpan dalam alur yang mudah diikuti.
+            article.home-benefit-card
+              span.home-benefit-mark Terlacak
+              h3 Status barang lebih jelas
+              p Lokasi, kondisi, dan perubahan penting dapat dicek tanpa bongkar banyak file.
+            article.home-benefit-card
+              span.home-benefit-mark Siap
+              h3 Laporan lebih cepat
+              p Data operasional siap dirangkum saat dibutuhkan untuk evaluasi atau administrasi.
+
+        section#alur.home-section.home-flow-section
+          .home-section-heading
+            p.home-kicker Alur sederhana
+            h2 Dari kebutuhan sampai laporan, tetap mengalir.
+          .home-flow
+            article
+              span 01
+              h3 Ajukan
+              p Catat kebutuhan barang laboratorium secara rapi sejak awal.
+            article
+              span 02
+              h3 Terima
+              p Barang masuk dicatat bertahap sesuai kondisi nyata di lapangan.
+            article
+              span 03
+              h3 Kelola
+              p Pantau aset, stok, dan perawatan dalam satu dashboard kerja.
+
+        section#mulai.home-cta
+          .home-cta-copy
+            p.home-kicker Mulai sekarang
+            h2 Masuk ke sistem dan lanjutkan pekerjaan lab dengan lebih tenang.
+            p Gunakan dashboard sesuai peran untuk mengelola data aset, stok, dan aktivitas laboratorium dengan alur yang lebih jelas.
+          .home-cta-actions
+            if currentUser
+              a.button(href="/dashboard") Buka Dashboard
+            else
+              a.button(href="/auth/login") Masuk Sistem
+
+      footer.home-footer
+        div
+          strong= appName
+          p Pengelolaan aset lab dan BHP yang clean, terarah, dan mudah digunakan.
+        nav(aria-label="Link footer")
+          a(href="/auth/login") Login
+          if currentUser
+            a(href="/dashboard") Dashboard

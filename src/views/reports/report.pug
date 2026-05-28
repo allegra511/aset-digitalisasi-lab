@@ -1,0 +1,80 @@
+extends ../layouts/main
+
+block content
+  section.section-header
+    div
+      p.eyebrow Laporan
+      h2= definition.title
+      p= definition.description
+    a.button.button-secondary(href="/reports") Semua Laporan
+
+  section.content-panel
+    form.filter-bar.report-filter-bar(action=`/reports/${reportType}`, method="GET")
+      if definition.filters.includes('search')
+        input(type="search", name="search", value=filters.search, placeholder="Cari data laporan")
+      if definition.filters.includes('roomId')
+        select(name="roomId")
+          option(value="") Semua ruangan
+          each room in rooms
+            option(value=room.id, selected=String(filters.roomId) === String(room.id)) #{room.code} - #{room.name}
+      if definition.filters.includes('status')
+        select(name="status")
+          option(value="") Semua status
+          each status in statusOptions
+            option(value=status, selected=filters.status === status)= status
+      if definition.filters.includes('condition')
+        select(name="condition")
+          option(value="") Semua kondisi
+          each condition in conditionOptions
+            option(value=condition, selected=filters.condition === condition)= condition
+      if definition.filters.includes('year')
+        input(type="number", name="year", value=filters.year, placeholder="Tahun", min="2000", max="2100")
+      if definition.filters.includes('itemType')
+        select(name="itemType")
+          option(value="") Semua jenis
+          each itemType in itemTypeOptions
+            option(value=itemType, selected=filters.itemType === itemType)= itemType
+      if definition.filters.includes('dateFrom')
+        input(type="date", name="dateFrom", value=filters.dateFrom)
+      if definition.filters.includes('dateTo')
+        input(type="date", name="dateTo", value=filters.dateTo)
+      button.button.button-secondary(type="submit") Filter
+
+    .report-toolbar
+      p Menampilkan #{pagination.totalItems} data
+      .actions
+        a.button.button-secondary(href=excelExportUrl) Export Excel
+        a.button.button-secondary(href=csvExportUrl) Export CSV
+
+    if rows && rows.length
+      .table-wrap
+        table.data-table
+          thead
+            tr
+              each column in definition.columns
+                th= column.label
+          tbody
+            each row in rows
+              tr
+                each column in definition.columns
+                  td
+                    if column.type === 'badge'
+                      - var badgeValue = formatReportValue(row[column.key], column)
+                      span.badge(class=`badge-${badgeValue}`)= badgeValue
+                    else
+                      = formatReportValue(row[column.key], column)
+
+      nav.pagination(aria-label="Navigasi halaman laporan")
+        if pagination.hasPreviousPage
+          a.button.button-secondary(href=previousPageUrl) Sebelumnya
+        else
+          span.pagination-disabled Sebelumnya
+        span.pagination-current Halaman #{pagination.page} dari #{pagination.totalPages}
+        if pagination.hasNextPage
+          a.button.button-secondary(href=nextPageUrl) Berikutnya
+        else
+          span.pagination-disabled Berikutnya
+    else
+      - var emptyTitle = definition.emptyTitle
+      - var emptyMessage = definition.emptyMessage
+      include ../partials/empty-state

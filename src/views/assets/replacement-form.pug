@@ -1,0 +1,32 @@
+extends ../layouts/main
+
+block content
+  section.section-header
+    div
+      p.eyebrow Replacement Aset
+      h2= asset.name
+      p Pilih aset pengganti untuk #{asset.inventory_number}
+    a.button.button-secondary(href=`/assets/${asset.id}`) Kembali
+
+  section.content-panel
+    form.form-grid(action=`/assets/${asset.id}/replacements`, method="POST", novalidate)
+      .form-group
+        label(for="newAssetId") Aset Pengganti
+        select#newAssetId(name="newAssetId", required)
+          option(value="") Pilih aset pengganti
+          each candidate in candidates
+            option(value=candidate.id, selected=String(formData.newAssetId) === String(candidate.id)) #{candidate.inventory_number} - #{candidate.name} (#{candidate.status})
+        if errors.newAssetId
+          p.field-error= errors.newAssetId
+      .form-group
+        label(for="replacementDate") Tanggal Penggantian
+        input#replacementDate(type="date", name="replacementDate", value=formData.replacementDate, required)
+        if errors.replacementDate
+          p.field-error= errors.replacementDate
+      .form-group
+        label(for="reason") Alasan Penggantian
+        textarea#reason(name="reason", rows="4", required)= formData.reason
+        if errors.reason
+          p.field-error= errors.reason
+      .form-actions
+        button.button(type="submit") Simpan Replacement

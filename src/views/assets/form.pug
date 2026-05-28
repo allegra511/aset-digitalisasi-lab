@@ -1,0 +1,54 @@
+extends ../layouts/main
+
+block content
+  section.section-header
+    div
+      p.eyebrow Inventaris
+      h2 Buat Aset dari Penerimaan
+      p #{record.item_name} - sisa unit belum dibuat aset: #{record.remaining_assets}
+    a.button.button-secondary(href="/assets") Kembali
+
+  section.content-panel
+    form.form-grid(action=`/assets/receiving/${record.id}`, method="POST", novalidate)
+      .form-group
+        label(for="inventoryNumber") Nomor Inventaris
+        input#inventoryNumber(type="text", name="inventoryNumber", value=formData.inventoryNumber, required)
+        if errors.inventoryNumber
+          p.field-error= errors.inventoryNumber
+      .form-group
+        label(for="name") Nama Aset
+        input#name(type="text", name="name", value=formData.name, required)
+        if errors.name
+          p.field-error= errors.name
+      .form-group
+        label(for="specification") Spesifikasi
+        textarea#specification(name="specification", rows="3")= formData.specification
+        if errors.specification
+          p.field-error= errors.specification
+      .form-group
+        label(for="roomId") Ruangan
+        select#roomId(name="roomId")
+          option(value="") Tidak ditentukan
+          each room in rooms
+            option(value=room.id, selected=String(formData.roomId) === String(room.id)) #{room.code} - #{room.name}
+        if errors.roomId
+          p.field-error= errors.roomId
+      .form-group
+        label(for="assetCondition") Kondisi Awal
+        select#assetCondition(name="assetCondition", required)
+          each condition in ['good', 'fair', 'damaged']
+            option(value=condition, selected=formData.assetCondition === condition)= condition
+        if errors.assetCondition
+          p.field-error= errors.assetCondition
+      .form-group
+        label(for="acquisitionDate") Tanggal Perolehan
+        input#acquisitionDate(type="date", name="acquisitionDate", value=formData.acquisitionDate)
+        if errors.acquisitionDate
+          p.field-error= errors.acquisitionDate
+      .form-group
+        label(for="photoPath") Path Foto
+        input#photoPath(type="text", name="photoPath", value=formData.photoPath, placeholder="/uploads/nama-file.jpg")
+        if errors.photoPath
+          p.field-error= errors.photoPath
+      .form-actions
+        button.button(type="submit") Buat Aset

@@ -1,0 +1,85 @@
+extends ../layouts/main
+
+block content
+  section.section-header
+    div
+      p.eyebrow Penerimaan Barang
+      h2 Catat Penerimaan
+      p #{item.name} dari draf #{item.draft_title}
+    a.button.button-secondary(href="/receiving") Kembali
+
+  section.summary-grid
+    article.summary-card
+      span.summary-label Approved
+      strong= item.quantity_approved
+      p Quantity disetujui
+    article.summary-card
+      span.summary-label Sudah Diterima
+      strong= item.received_quantity
+      p Total penerimaan tercatat
+    article.summary-card
+      span.summary-label Sisa
+      strong= item.remaining_quantity
+      p Maksimal diterima sekarang
+
+  section.content-panel
+    form.form-grid(action=`/receiving/items/${item.id}/receive`, method="POST", novalidate)
+      .form-group
+        label(for="receivedQuantity") Jumlah Diterima
+        input#receivedQuantity(type="number", name="receivedQuantity", value=formData.receivedQuantity, min="1", max=item.remaining_quantity, required)
+        if errors.receivedQuantity
+          p.field-error= errors.receivedQuantity
+      .form-group
+        label(for="receivedDate") Tanggal Penerimaan
+        input#receivedDate(type="date", name="receivedDate", value=formData.receivedDate, required)
+        if errors.receivedDate
+          p.field-error= errors.receivedDate
+      .form-group
+        label(for="supplierName") Supplier
+        input#supplierName(type="text", name="supplierName", value=formData.supplierName)
+        if errors.supplierName
+          p.field-error= errors.supplierName
+      .form-group
+        label(for="purchaseReference") Referensi Pembelian
+        input#purchaseReference(type="text", name="purchaseReference", value=formData.purchaseReference)
+        if errors.purchaseReference
+          p.field-error= errors.purchaseReference
+      .form-group
+        label(for="note") Catatan
+        textarea#note(name="note", rows="3")= formData.note
+        if errors.note
+          p.field-error= errors.note
+      .form-actions
+        button.button(type="submit") Simpan Penerimaan
+
+  section.content-panel
+    .panel-header
+      h2 Riwayat Penerimaan
+    if records && records.length
+      .table-wrap
+        table.data-table
+          thead
+            tr
+              th Tanggal
+              th Jumlah
+              th Penerima
+              th Catatan
+              th Aset
+          tbody
+            each record in records
+              tr
+                td= formatDate(record.received_date)
+                td= record.received_quantity
+                td= record.receiver_name
+                td= record.note || '-'
+                td
+                  if item.item_type === 'asset'
+                    a.button.button-secondary(href=`/assets/receiving/${record.id}/new`) Buat Aset
+                  else if item.item_type === 'consumable'
+                    a.button.button-secondary(href=`/consumables/receiving/${record.id}/stock-in`) Masukkan Stok BHP
+                  else
+                    span= '-'
+    else
+      - var emptyTitle = 'Belum ada riwayat penerimaan'
+      - var emptyMessage = 'Batch penerimaan akan tampil di sini setelah disimpan.'
+      include ../partials/empty-state

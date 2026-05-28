@@ -1,0 +1,428 @@
+Project aset_digitalisasi_lab {
+  database_type: 'MySQL'
+  Note: '''
+    DBML ini merepresentasikan database Labora sesuai database/schema.sql.
+    Beberapa nilai domain disimpan sebagai VARCHAR pada MySQL dan didokumentasikan
+    melalui Enum serta note kolom agar tetap sesuai schema aktual.
+    Tipe MySQL UNSIGNED direpresentasikan dengan tipe DBML standar bigint/int/smallint
+    karena parser DBML CLI tidak menerima tipe multiword seperti "bigint unsigned".
+  '''
+}
+
+Enum role_name {
+  administrator
+  kepala_laboratorium
+  ketua_program_studi
+  staf_administrasi
+  staf_laboratorium
+}
+
+Enum procurement_item_type {
+  asset
+  consumable
+}
+
+Enum draft_status {
+  draft
+  submitted
+  finalized
+}
+
+Enum procurement_item_review_status {
+  draft
+  pending_review
+  approved
+  rejected
+}
+
+Enum receiving_status {
+  not_received
+  partially_received
+  fully_received
+}
+
+Enum asset_status {
+  active
+  maintenance
+  damaged
+  replaced
+  deleted
+}
+
+Enum asset_condition {
+  good
+  fair
+  damaged
+}
+
+Enum consumable_status {
+  available
+  low_stock
+  out_of_stock
+}
+
+Enum stock_transaction_type {
+  IN
+  OUT
+  ADJUSTMENT
+}
+
+TablePartial timestamps {
+  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [not null, default: `CURRENT_TIMESTAMP`, note: 'ON UPDATE CURRENT_TIMESTAMP']
+}
+
+TablePartial created_timestamp {
+  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+}
+
+Table roles {
+  id bigint [pk, increment]
+  name varchar(80) [not null, unique, note: 'Domain role_name: administrator, kepala_laboratorium, ketua_program_studi, staf_administrasi, staf_laboratorium']
+  label varchar(120) [not null]
+  description text
+  ~timestamps
+
+  indexes {
+    name [unique, name: 'uq_roles_name']
+  }
+}
+
+Table users {
+  id bigint [pk, increment]
+  role_id bigint [not null]
+  full_name varchar(150) [not null]
+  email varchar(190) [not null, unique]
+  username varchar(80) [not null, unique]
+  password_hash varchar(255) [not null]
+  phone varchar(40)
+  is_active tinyint(1) [not null, default: 1]
+  last_login_at datetime
+  ~timestamps
+
+  indexes {
+    email [unique, name: 'uq_users_email']
+    username [unique, name: 'uq_users_username']
+    role_id [name: 'idx_users_role_id']
+    is_active [name: 'idx_users_is_active']
+  }
+}
+
+Table rooms {
+  id bigint [pk, increment]
+  code varchar(60) [not null, unique]
+  name varchar(150) [not null]
+  location varchar(190)
+  description text
+  is_active tinyint(1) [not null, default: 1]
+  ~timestamps
+
+  indexes {
+    code [unique, name: 'uq_rooms_code']
+    is_active [name: 'idx_rooms_is_active']
+  }
+}
+
+Table procurement_drafts {
+  id bigint [pk, increment]
+  year smallint [not null]
+  title varchar(190) [not null]
+  status varchar(40) [not null, default: 'draft', note: 'Domain draft_status: draft, submitted, finalized']
+  is_locked tinyint(1) [not null, default: 0]
+  created_by_user_id bigint [not null]
+  submitted_at datetime
+  finalized_by_user_id bigint
+  finalized_at datetime
+  notes text
+  ~timestamps
+
+  indexes {
+    year [name: 'idx_procurement_drafts_year']
+    status [name: 'idx_procurement_drafts_status']
+    created_by_user_id [name: 'idx_procurement_drafts_creator']
+    finalized_by_user_id [name: 'idx_procurement_drafts_finalizer']
+  }
+}
+
+Table procurement_items {
+  id bigint [pk, increment]
+  draft_id bigint [not null]
+  item_type varchar(40) [not null, note: 'Domain procurement_item_type: asset, consumable. Ini menentukan turunan proses bisnis ke assets atau consumables setelah receiving.']
+  name varchar(190) [not null]
+  specification text
+  quantity_requested int [not null]
+  quantity_approved int
+  estimated_unit_price decimal(15,2) [not null, default: 0.00]
+  final_unit_price decimal(15,2)
+  room_id bigint
+  reference_link varchar(500)
+  notes text
+  replacement_candidate_asset_id bigint [note: 'Aset lama yang diusulkan untuk diganti oleh item pengadaan ini.']
+  review_status varchar(40) [not null, default: 'draft', note: 'Domain procurement_item_review_status: draft, pending_review, approved, rejected']
+  review_note text
+  reviewed_by_user_id bigint
+  reviewed_at datetime
+  receiving_status varchar(40) [not null, default: 'not_received', note: 'Domain receiving_status: not_received, partially_received, fully_received']
+  ~timestamps
+
+  indexes {
+    draft_id [name: 'idx_procurement_items_draft_id']
+    item_type [name: 'idx_procurement_items_type']
+    review_status [name: 'idx_procurement_items_review_status']
+    receiving_status [name: 'idx_procurement_items_receiving_status']
+    room_id [name: 'idx_procurement_items_room_id']
+    reviewed_by_user_id [name: 'idx_procurement_items_reviewed_by']
+    replacement_candidate_asset_id [name: 'idx_procurement_items_replacement_candidate']
+  }
+}
+
+Table receiving_records {
+  id bigint [pk, increment]
+  procurement_item_id bigint [not null]
+  received_quantity int [not null]
+  received_date date [not null]
+  receiver_user_id bigint [not null]
+  supplier_name varchar(190)
+  purchase_reference varchar(190)
+  note text
+  ~timestamps
+
+  indexes {
+    procurement_item_id [name: 'idx_receiving_records_item_id']
+    receiver_user_id [name: 'idx_receiving_records_receiver']
+    received_date [name: 'idx_receiving_records_date']
+  }
+}
+
+Table assets {
+  id bigint [pk, increment]
+  procurement_item_id bigint
+  receiving_record_id bigint
+  room_id bigint
+  inventory_number varchar(120) [not null, unique]
+  name varchar(190) [not null]
+  specification text
+  status varchar(40) [not null, default: 'active', note: 'Domain asset_status: active, maintenance, damaged, replaced, deleted']
+  asset_condition varchar(40) [not null, default: 'good', note: 'Domain asset_condition: good, fair, damaged']
+  acquisition_date date
+  photo_path varchar(500)
+  qr_code_path varchar(500)
+  deleted_at datetime [note: 'Soft delete timestamp. Status biasanya ikut menjadi deleted.']
+  created_by_user_id bigint
+  ~timestamps
+
+  indexes {
+    inventory_number [unique, name: 'uq_assets_inventory_number']
+    procurement_item_id [name: 'idx_assets_procurement_item_id']
+    receiving_record_id [name: 'idx_assets_receiving_record_id']
+    room_id [name: 'idx_assets_room_id']
+    status [name: 'idx_assets_status']
+    asset_condition [name: 'idx_assets_condition']
+    created_by_user_id [name: 'idx_assets_created_by']
+  }
+}
+
+Table asset_status_histories {
+  id bigint [pk, increment]
+  asset_id bigint [not null]
+  previous_status varchar(40) [note: 'Domain asset_status']
+  new_status varchar(40) [not null, note: 'Domain asset_status']
+  previous_condition varchar(40) [note: 'Domain asset_condition']
+  new_condition varchar(40) [note: 'Domain asset_condition']
+  changed_by_user_id bigint
+  changed_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+  note text
+
+  indexes {
+    asset_id [name: 'idx_asset_status_histories_asset_id']
+    new_status [name: 'idx_asset_status_histories_new_status']
+    changed_by_user_id [name: 'idx_asset_status_histories_changed_by']
+  }
+}
+
+Table asset_replacements {
+  id bigint [pk, increment]
+  old_asset_id bigint [not null]
+  new_asset_id bigint [not null]
+  reason text
+  replacement_date date [not null]
+  created_by_user_id bigint
+  ~timestamps
+
+  indexes {
+    (old_asset_id, new_asset_id) [unique, name: 'uq_asset_replacements_pair']
+    old_asset_id [name: 'idx_asset_replacements_old_asset']
+    new_asset_id [name: 'idx_asset_replacements_new_asset']
+    created_by_user_id [name: 'idx_asset_replacements_created_by']
+  }
+}
+
+Table consumables {
+  id bigint [pk, increment]
+  procurement_item_id bigint
+  room_id bigint
+  name varchar(190) [not null]
+  specification text
+  unit varchar(40) [not null, default: 'unit']
+  current_stock int [not null, default: 0]
+  minimum_stock int [not null, default: 0]
+  status varchar(40) [not null, default: 'available', note: 'Domain consumable_status: available, low_stock, out_of_stock']
+  created_by_user_id bigint
+  ~timestamps
+
+  indexes {
+    procurement_item_id [name: 'idx_consumables_procurement_item_id']
+    room_id [name: 'idx_consumables_room_id']
+    name [name: 'idx_consumables_name']
+    status [name: 'idx_consumables_status']
+    current_stock [name: 'idx_consumables_current_stock']
+    minimum_stock [name: 'idx_consumables_minimum_stock']
+    created_by_user_id [name: 'idx_consumables_created_by']
+  }
+}
+
+Table consumable_stock_transactions {
+  id bigint [pk, increment]
+  consumable_id bigint [not null]
+  transaction_type varchar(40) [not null, note: 'Domain stock_transaction_type: IN, OUT, ADJUSTMENT']
+  quantity int [not null]
+  stock_before int [not null]
+  stock_after int [not null]
+  source_type varchar(80) [note: 'Polymorphic reference. Nilai yang dipakai aplikasi: receiving_record, maintenance_log, manual.']
+  source_id bigint [note: 'ID dari tabel sesuai source_type. Tidak ada FK fisik pada schema MySQL.']
+  transaction_date datetime [not null, default: `CURRENT_TIMESTAMP`]
+  note text
+  created_by_user_id bigint
+  ~created_timestamp
+
+  indexes {
+    consumable_id [name: 'idx_stock_transactions_consumable_id']
+    transaction_type [name: 'idx_stock_transactions_type']
+    transaction_date [name: 'idx_stock_transactions_date']
+    (source_type, source_id) [name: 'idx_stock_transactions_source']
+    created_by_user_id [name: 'idx_stock_transactions_created_by']
+  }
+
+  Note: '''
+    source_type/source_id adalah relasi polymorphic non-FK.
+    Contoh sumber: receiving_records.id untuk stok masuk dari penerimaan,
+    maintenance_logs.id untuk stok keluar dari maintenance.
+  '''
+}
+
+Table maintenance_logs {
+  id bigint [pk, increment]
+  asset_id bigint [not null]
+  maintenance_date date [not null]
+  description text [not null]
+  condition_before varchar(40) [note: 'Domain asset_condition']
+  condition_after varchar(40) [note: 'Domain asset_condition']
+  status_after varchar(40) [note: 'Domain asset_status yang dipakai maintenance: active, maintenance, damaged']
+  cost decimal(15,2) [not null, default: 0.00]
+  performed_by_user_id bigint
+  ~timestamps
+
+  indexes {
+    asset_id [name: 'idx_maintenance_logs_asset_id']
+    maintenance_date [name: 'idx_maintenance_logs_date']
+    performed_by_user_id [name: 'idx_maintenance_logs_performed_by']
+  }
+}
+
+Table maintenance_consumables {
+  id bigint [pk, increment]
+  maintenance_log_id bigint [not null]
+  consumable_id bigint [not null]
+  quantity_used int [not null]
+  ~created_timestamp
+
+  indexes {
+    (maintenance_log_id, consumable_id) [unique, name: 'uq_maintenance_consumables_pair']
+    maintenance_log_id [name: 'idx_maintenance_consumables_log_id']
+    consumable_id [name: 'idx_maintenance_consumables_consumable_id']
+  }
+}
+
+Table attachments {
+  id bigint [pk, increment]
+  entity_type varchar(80) [not null, note: 'Polymorphic entity type, misalnya assets, maintenance_logs, procurement_items. Tidak ada FK fisik.']
+  entity_id bigint [not null, note: 'ID record sesuai entity_type. Tidak ada FK fisik.']
+  file_name varchar(255) [not null]
+  original_name varchar(255) [not null]
+  mime_type varchar(120) [not null]
+  file_size bigint [not null]
+  file_path varchar(500) [not null]
+  uploaded_by_user_id bigint
+  ~created_timestamp
+
+  indexes {
+    (entity_type, entity_id) [name: 'idx_attachments_entity']
+    uploaded_by_user_id [name: 'idx_attachments_uploaded_by']
+  }
+
+  Note: 'attachments menggunakan relasi polymorphic entity_type/entity_id tanpa FK fisik.'
+}
+
+Table audit_logs {
+  id bigint [pk, increment]
+  user_id bigint
+  action varchar(80) [not null]
+  entity varchar(120) [not null, note: 'Nama entity/tabel target audit, misalnya users, rooms, assets. Tidak ada FK fisik ke tabel target.']
+  entity_id bigint [note: 'ID record target audit sesuai entity. Tidak ada FK fisik.']
+  before_data json
+  after_data json
+  ip_address varchar(80)
+  user_agent varchar(500)
+  ~created_timestamp
+
+  indexes {
+    user_id [name: 'idx_audit_logs_user_id']
+    action [name: 'idx_audit_logs_action']
+    (entity, entity_id) [name: 'idx_audit_logs_entity']
+    created_at [name: 'idx_audit_logs_created_at']
+  }
+
+  Note: 'audit_logs.entity/entity_id adalah referensi polymorphic untuk riwayat perubahan lintas modul.'
+}
+
+Ref fk_users_role_id: users.role_id > roles.id [update: cascade, delete: restrict]
+
+Ref fk_procurement_drafts_created_by: procurement_drafts.created_by_user_id > users.id [update: cascade, delete: restrict]
+Ref fk_procurement_drafts_finalized_by: procurement_drafts.finalized_by_user_id > users.id [update: cascade, delete: set null]
+
+Ref fk_procurement_items_draft_id: procurement_items.draft_id > procurement_drafts.id [update: cascade, delete: cascade]
+Ref fk_procurement_items_room_id: procurement_items.room_id > rooms.id [update: cascade, delete: set null]
+Ref fk_procurement_items_reviewed_by: procurement_items.reviewed_by_user_id > users.id [update: cascade, delete: set null]
+Ref fk_procurement_items_replacement_candidate: procurement_items.replacement_candidate_asset_id > assets.id [update: cascade, delete: set null]
+
+Ref fk_receiving_records_item_id: receiving_records.procurement_item_id > procurement_items.id [update: cascade, delete: restrict]
+Ref fk_receiving_records_receiver: receiving_records.receiver_user_id > users.id [update: cascade, delete: restrict]
+
+Ref fk_assets_procurement_item_id: assets.procurement_item_id > procurement_items.id [update: cascade, delete: set null]
+Ref fk_assets_receiving_record_id: assets.receiving_record_id > receiving_records.id [update: cascade, delete: set null]
+Ref fk_assets_room_id: assets.room_id > rooms.id [update: cascade, delete: set null]
+Ref fk_assets_created_by: assets.created_by_user_id > users.id [update: cascade, delete: set null]
+
+Ref fk_asset_status_histories_asset_id: asset_status_histories.asset_id > assets.id [update: cascade, delete: cascade]
+Ref fk_asset_status_histories_changed_by: asset_status_histories.changed_by_user_id > users.id [update: cascade, delete: set null]
+
+Ref fk_asset_replacements_old_asset: asset_replacements.old_asset_id > assets.id [update: cascade, delete: restrict]
+Ref fk_asset_replacements_new_asset: asset_replacements.new_asset_id > assets.id [update: cascade, delete: restrict]
+Ref fk_asset_replacements_created_by: asset_replacements.created_by_user_id > users.id [update: cascade, delete: set null]
+
+Ref fk_consumables_procurement_item_id: consumables.procurement_item_id > procurement_items.id [update: cascade, delete: set null]
+Ref fk_consumables_room_id: consumables.room_id > rooms.id [update: cascade, delete: set null]
+Ref fk_consumables_created_by: consumables.created_by_user_id > users.id [update: cascade, delete: set null]
+
+Ref fk_stock_transactions_consumable_id: consumable_stock_transactions.consumable_id > consumables.id [update: cascade, delete: restrict]
+Ref fk_stock_transactions_created_by: consumable_stock_transactions.created_by_user_id > users.id [update: cascade, delete: set null]
+
+Ref fk_maintenance_logs_asset_id: maintenance_logs.asset_id > assets.id [update: cascade, delete: restrict]
+Ref fk_maintenance_logs_performed_by: maintenance_logs.performed_by_user_id > users.id [update: cascade, delete: set null]
+
+Ref fk_maintenance_consumables_log_id: maintenance_consumables.maintenance_log_id > maintenance_logs.id [update: cascade, delete: cascade]
+Ref fk_maintenance_consumables_consumable_id: maintenance_consumables.consumable_id > consumables.id [update: cascade, delete: restrict]
+
+Ref fk_attachments_uploaded_by: attachments.uploaded_by_user_id > users.id [update: cascade, delete: set null]
+
+Ref fk_audit_logs_user_id: audit_logs.user_id > users.id [update: cascade, delete: set null]

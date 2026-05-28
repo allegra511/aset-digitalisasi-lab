@@ -1,0 +1,31 @@
+extends ../layouts/main
+
+block content
+  section.section-header
+    div
+      p.eyebrow Transaksi Stok
+      h2= consumable.name
+      p Stok saat ini #{consumable.current_stock} #{consumable.unit}
+    a.button.button-secondary(href=`/consumables/${consumable.id}`) Kembali
+
+  section.content-panel
+    form.form-grid(action=`/consumables/${consumable.id}/transactions`, method="POST", novalidate)
+      .form-group
+        label(for="transactionType") Jenis Transaksi
+        select#transactionType(name="transactionType", required)
+          each type in ['IN', 'OUT', 'ADJUSTMENT']
+            option(value=type, selected=formData.transactionType === type)= type
+        if errors.transactionType
+          p.field-error= errors.transactionType
+      .form-group
+        label(for="quantity") Quantity
+        input#quantity(type="number", name="quantity", value=formData.quantity, min="1", required)
+        if errors.quantity
+          p.field-error= errors.quantity
+      .form-group
+        label(for="note") Catatan
+        textarea#note(name="note", rows="3")= formData.note
+        if errors.note
+          p.field-error= errors.note
+      .form-actions
+        button.button(type="submit") Simpan Transaksi

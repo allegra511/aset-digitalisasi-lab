@@ -1,0 +1,4 @@
+if flashMessages && flashMessages.length
+  .flash-stack
+    each flash in flashMessages
+      .flash(class=`flash-${flash.type || 'info'}`)= flash.message

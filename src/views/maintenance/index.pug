@@ -1,0 +1,45 @@
+extends ../layouts/main
+
+block content
+  section.section-header
+    div
+      p.eyebrow Maintenance
+      h2 Maintenance Aset
+      p Catat perawatan aset dan pemakaian BHP secara otomatis.
+    a.button(href="/maintenance/new") Tambah Maintenance
+
+  section.content-panel
+    form.filter-bar(action="/maintenance", method="GET")
+      input(type="search", name="search", value=search, placeholder="Cari aset atau nomor inventaris")
+      button.button.button-secondary(type="submit") Cari
+
+    if logs && logs.length
+      .table-wrap
+        table.data-table
+          thead
+            tr
+              th Tanggal
+              th Aset
+              th Kondisi
+              th Status Setelah
+              th Biaya
+              th Oleh
+              th Aksi
+          tbody
+            each log in logs
+              tr
+                td= formatDate(log.maintenance_date)
+                td
+                  strong= log.inventory_number
+                  p= log.asset_name
+                td #{log.condition_before || '-'} -> #{log.condition_after || '-'}
+                td
+                  span.badge(class=`badge-${log.status_after}`)= log.status_after
+                td= log.cost || 0
+                td= log.performed_by_name || '-'
+                td.actions
+                  a.button.button-secondary(href=`/maintenance/${log.id}`) Detail
+    else
+      - var emptyTitle = 'Belum ada maintenance'
+      - var emptyMessage = 'Log maintenance aset akan tampil di sini.'
+      include ../partials/empty-state

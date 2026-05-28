@@ -1,0 +1,57 @@
+extends ../layouts/main
+
+block content
+  section.section-header
+    div
+      p.eyebrow Detail BHP
+      h2= consumable.name
+      p #{consumable.unit} - #{consumable.room_name || 'Tanpa ruangan'}
+    .actions
+      a.button.button-secondary(href="/consumables") Kembali
+      a.button.button-secondary(href=`/consumables/${consumable.id}/edit`) Edit
+      a.button(href=`/consumables/${consumable.id}/transactions/new`) Transaksi Stok
+
+  section.summary-grid
+    article.summary-card
+      span.summary-label Stok Saat Ini
+      strong= consumable.current_stock
+      p Satuan #{consumable.unit}
+    article.summary-card
+      span.summary-label Stok Minimum
+      strong= consumable.minimum_stock
+      p Ambang low stock
+    article.summary-card
+      span.summary-label Status
+      strong
+        span.badge(class=`badge-${consumable.status}`)= consumable.status
+      p Status dihitung dari stok
+
+  section.content-panel
+    h2 Riwayat Transaksi
+    if transactions && transactions.length
+      .table-wrap
+        table.data-table
+          thead
+            tr
+              th Tanggal
+              th Tipe
+              th Quantity
+              th Sebelum
+              th Sesudah
+              th Sumber
+              th Oleh
+          tbody
+            each tx in transactions
+              tr
+                td= formatDateTime(tx.transaction_date)
+                td
+                  span.badge(class=`badge-${tx.transaction_type}`)= tx.transaction_type
+                td= tx.quantity
+                td= tx.stock_before
+                td= tx.stock_after
+                td #{tx.source_type || '-'} #{tx.source_id || ''}
+                td= tx.created_by_name || '-'
+    else
+      - var emptyTitle = 'Belum ada transaksi stok'
+      - var emptyMessage = 'Stock in/out/adjustment akan tampil di sini.'
+      include ../partials/empty-state

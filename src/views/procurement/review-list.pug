@@ -1,0 +1,40 @@
+extends ../layouts/main
+
+block content
+  section.section-header
+    div
+      p.eyebrow Ketua Program Studi
+      h2 Review Pengadaan
+      p Draf submitted yang menunggu keputusan review.
+
+  section.content-panel
+    form.filter-bar(action="/procurement/review", method="GET")
+      input(type="search", name="search", value=search, placeholder="Cari judul atau pembuat")
+      button.button.button-secondary(type="submit") Cari
+
+    if drafts && drafts.length
+      .table-wrap
+        table.data-table
+          thead
+            tr
+              th Tahun
+              th Judul
+              th Pembuat
+              th Submitted
+              th Status
+              th Aksi
+          tbody
+            each draft in drafts
+              tr
+                td= draft.year
+                td= draft.title
+                td= draft.creator_name
+                td= formatDateTime(draft.submitted_at)
+                td
+                  span.badge.badge-submitted= draft.status
+                td.actions
+                  a.button.button-secondary(href=`/procurement/review/${draft.id}`) Review
+    else
+      - var emptyTitle = 'Tidak ada draf submitted'
+      - var emptyMessage = search ? 'Tidak ada draf yang cocok dengan pencarian.' : 'Draf yang disubmit Kepala Lab akan tampil di sini.'
+      include ../partials/empty-state

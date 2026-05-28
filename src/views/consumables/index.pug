@@ -1,0 +1,55 @@
+extends ../layouts/main
+
+block content
+  section.section-header
+    div
+      p.eyebrow BHP
+      h2 Barang Habis Pakai
+      p Kelola master BHP, stok saat ini, dan peringatan stok minimum.
+    a.button(href="/consumables/new") Tambah BHP
+
+  section.content-panel
+    form.filter-bar(action="/consumables", method="GET")
+      input(type="search", name="search", value=filters.search, placeholder="Cari nama atau spesifikasi")
+      select(name="roomId")
+        option(value="") Semua ruangan
+        each room in rooms
+          option(value=room.id, selected=String(filters.roomId) === String(room.id)) #{room.code} - #{room.name}
+      select(name="status")
+        option(value="") Semua status
+        each status in ['available', 'low_stock', 'out_of_stock']
+          option(value=status, selected=filters.status === status)= status
+      button.button.button-secondary(type="submit") Filter
+
+    if consumables && consumables.length
+      .table-wrap
+        table.data-table
+          thead
+            tr
+              th Nama
+              th Satuan
+              th Stok
+              th Minimum
+              th Ruangan
+              th Status
+              th Aksi
+          tbody
+            each item in consumables
+              tr
+                td
+                  strong= item.name
+                  if item.specification
+                    p= item.specification
+                td= item.unit
+                td= item.current_stock
+                td= item.minimum_stock
+                td= item.room_name || '-'
+                td
+                  span.badge(class=`badge-${item.status}`)= item.status
+                td.actions
+                  a.button.button-secondary(href=`/consumables/${item.id}`) Detail
+                  a.button.button-secondary(href=`/consumables/${item.id}/transactions/new`) Transaksi
+    else
+      - var emptyTitle = 'Belum ada BHP'
+      - var emptyMessage = 'Tambahkan BHP atau proses receiving consumable ke stok.'
+      include ../partials/empty-state

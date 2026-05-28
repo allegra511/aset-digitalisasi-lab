@@ -1,0 +1,41 @@
+extends ../layouts/main
+
+block content
+  section.section-header
+    div
+      p.eyebrow Kepala Laboratorium
+      h2 Draf Pengadaan
+      p Kelola draf pengajuan barang inventaris dan BHP.
+    a.button(href="/procurement/drafts/new") Buat Draf
+
+  section.content-panel
+    form.filter-bar(action="/procurement/drafts", method="GET")
+      input(type="search", name="search", value=search, placeholder="Cari judul atau status")
+      button.button.button-secondary(type="submit") Cari
+
+    if drafts && drafts.length
+      .table-wrap
+        table.data-table
+          thead
+            tr
+              th Tahun
+              th Judul
+              th Status
+              th Diperbarui
+              th Aksi
+          tbody
+            each draft in drafts
+              tr
+                td= draft.year
+                td= draft.title
+                td
+                  span.badge(class=`badge-${draft.status}`)= draft.status
+                td= formatDateTime(draft.updated_at)
+                td.actions
+                  a.button.button-secondary(href=`/procurement/drafts/${draft.id}`) Detail
+                  if draft.status === 'draft' && !draft.is_locked
+                    a.button.button-secondary(href=`/procurement/drafts/${draft.id}/edit`) Edit
+    else
+      - var emptyTitle = 'Belum ada draf pengadaan'
+      - var emptyMessage = search ? 'Tidak ada draf yang cocok dengan pencarian.' : 'Buat draf pertama untuk mulai mengajukan barang.'
+      include ../partials/empty-state
