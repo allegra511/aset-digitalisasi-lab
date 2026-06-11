@@ -1,5 +1,6 @@
 const { validationResult } = require('express-validator');
 const assetsService = require('./assets.service');
+const { pool } = require('../../../config/database'); // Added to fetch pending banners directly
 const { addFlash, asyncHandler, buildPaginationMeta, getPagination } = require('../../shared/helpers');
 
 function getRequestMeta(req) {
@@ -59,16 +60,35 @@ const index = asyncHandler(async (req, res) => {
     status: req.query.status || '',
     condition: req.query.condition || '',
   };
+
+  // Run core pagination and filter queries alongside active room lookup lists
   const [result, rooms] = await Promise.all([
     assetsService.listAssets({ ...filters, ...pagination }),
     assetsService.listRooms(),
   ]);
 
+  // ============================================================================
+  // BACKEND HOOK: FETCH PENDING BATCHES WAITING FOR ASSET CONVERSION
+  // ============================================================================
+  const [pendingReceivingRecords] = await pool.execute(
+    `SELECT rr.id, rr.received_quantity, DATE_FORMAT(rr.received_date, '%Y-%m-%d') as received_date, rr.supplier_name, pi.name AS item_name,
+            (rr.received_quantity - COUNT(a.id)) AS remaining_assets
+     FROM receiving_records rr
+     INNER JOIN procurement_items pi ON pi.id = rr.procurement_item_id
+     LEFT JOIN assets a ON a.receiving_record_id = rr.id
+     WHERE pi.item_type = 'asset'
+     GROUP BY rr.id
+     HAVING remaining_assets > 0
+     ORDER BY rr.received_date DESC`
+  );
+
+  // Render index with your standard datasets plus the dynamic alert banner array
   res.render('assets/index', {
     title: 'Inventaris Aset',
     assets: result.rows,
     rooms,
     filters,
+    pendingReceivingRecords, // Exploded out cleanly to map the Solution A Pug variables!
     pagination: buildPaginationMeta({ ...pagination, total: result.total }),
   });
 });

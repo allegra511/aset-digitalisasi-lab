@@ -8,6 +8,21 @@ block content
       p Telusuri aset berdasarkan nomor inventaris, ruangan, status, dan kondisi.
 
   section.content-panel
+    if pendingReceivingRecords && pendingReceivingRecords.length
+      .alert-box.alert-info(style="background-color: #e1f5fe; border-left: 4px solid #0288d1; padding: 1rem; margin-bottom: 2rem; border-radius: 4px;")
+        h4(style="margin-top: 0; margin-bottom: 0.5rem; color: #0288d1; font-weight: 600;") 📥 Ada barang baru yang belum diproses menjadi aset!
+        p(style="margin-bottom: 1rem; color: #555;") Silakan pilih penerimaan di bawah ini untuk mengalokasikan nomor inventaris dan mengenerate QR Code secara manual:
+        ul.pending-list(style="list-style: none; padding-left: 0; margin: 0;")
+          each record in pendingReceivingRecords
+            li(style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px dashed #b3e5fc;")
+              div
+                strong(style="color: #222; font-size: 0.95rem;") #{record.item_name}
+                span(style="margin-left: 0.5rem; color: #d32f2f; font-weight: bold; font-size: 0.85rem;") (#{record.remaining_assets} unit belum diberi kode)
+                br
+                small(style="color: #777;") Diterima: #{record.received_date} • Dari: #{record.supplier_name || 'Supplier'}
+              a.button.button-primary.button-small(href=`/assets/receiving/${record.id}/new`) Proses Menjadi Aset
+
+    //- Filter Bar Form
     form.filter-bar(action="/assets", method="GET")
       input(type="search", name="search", value=filters.search, placeholder="Cari nomor inventaris atau nama")
       select(name="roomId")
@@ -24,6 +39,7 @@ block content
           option(value=condition, selected=filters.condition === condition)= condition
       button.button.button-secondary(type="submit") Filter
 
+    //- Main Assets Table Rendering
     if assets && assets.length
       .table-wrap
         table.data-table
